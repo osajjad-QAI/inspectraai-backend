@@ -1,0 +1,265 @@
+# test_telethon_service.py
+import asyncio
+import os
+import logging
+from unittest import mock
+
+import pytest
+from pytest import MonkeyPatch
+
+# Import the class under test
+from app.services.telethon_service import TelethonService, UserAlreadyParticipantError
+
+# --------------------------------------------------------------------------- #
+# Helpers
+# --------------------------------------------------------------------------- #
+
+@pytest.fixture
+def env_vars(monkeypatch: MonkeyPatch):
+    """Set up the required environment variables for the service."""
+    monkeypatch.setenv("TELEGRAM_API_ID", "12345")
+    monkeypatch.setenv("TELEGRAM_API_HASH", "hash")
+    monkeypatch.setenv("TELEGRAM_PHONE_NUMBER", "+15555555555")
+    monkeypatch.setenv("TELEGRAM_SESSION_NAME", "test_session")
+    return {
+        "TELEGRAM_API_ID": "12345",
+        "TELEGRAM_API_HASH": "hash",
+        "TELEGRAM_PHONE_NUMBER": "+15555555555",
+        "TELEGRAM_SESSION_NAME": "test_session",
+    }
+
+
+@pytest.fixture
+def mock_client():
+    """Return a mock TelegramClient with the minimal interface used by the service."""
+    client = mock.AsyncMock()
+    client.is_connected.return_value = False
+    client.connect = mock.AsyncMock()
+    client.start = mock.AsyncMock()
+    client.disconnect = mock.AsyncMock()
+    client.iter_participants = mock.AsyncMock()
+    client.get_entity = mock.AsyncMock()
+    return client
+
+
+@pytest.fixture
+def service(env_vars, mock_client, monkeypatch: MonkeyPatch):
+    """Instantiate the service with all external dependencies mocked."""
+    # Patch the TelethonClient constructor to return our mock client
+    monkeypatch.setattr(
+        "app.services.telethon_service.TelegramClient", lambda *_, **__: mock_client
+    )
+
+    # Patch the ImportChatInviteRequest to a dummy callable
+    monkeypatch.setattr(
+        "app.services.telethon_service.ImportChatInviteRequest",
+        lambda invite_hash: f"ImportChatInviteRequest({invite_hash})",
+    )
+
+    # Patch the UserAlreadyParticipantError to the real exception class
+    monkeypatch.setattr(
+        "app.services.telethon_service.UserAlreadyParticipantError",
+        UserAlreadyParticipantError,
+    )
+
+    # Patch os.path.exists and os.remove
+    monkeypatch.setattr("os.path.exists", lambda path: False)
+    monkeypatch.setattr("os.remove", mock.Mock())
+
+    # Patch asyncio.sleep to avoid real delays
+    monkeypatch.setattr("asyncio.sleep", mock.AsyncMock())
+
+    svc = TelethonService(max_retries=2, retry_delay=0.01)
+    return svc
+
+
+# --------------------------------------------------------------------------- #
+# Tests
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.asyncio
+async def test_start_missing_credentials(monkeypatch: MonkeyPatch, mock_client):
+    """If API credentials are missing, start() should return None and log an error."""
+    monkeypatch.setenv("TELEGRAM_API_ID", "")  # unset
+    svc = TelethonService()
+    with pytest.raises(RuntimeError):
+        # client property should raise if not started
+        _ = svc.client
+
+    result = await svc.start()
+    assert result is None
+    assert not mock_client.connect.called
+    assert not mock_client.start.called
+
+
+@pytest.mark.asyncio
+async def test_start_with_existing_session(monkeypatch: MonkeyPatch, mock_client, service):
+    """When a session file exists, start() should just connect."""
+    monkeypatch.setattr("os.path.exists", lambda path: True)
+    result = await service.start()
+    assert result is mock_client
+    mock_client.connect.assert_awaited_once()
+    mock_client.start.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_start_with_phone(monkeypatch: MonkeyPatch, mock_client, service):
+    """When no session file exists but a phone number is set, start() should call start()."""
+    monkeypatch.setattr("os.path.exists", lambda path: False)
+    result = await service.start()
+    assert result is mock_client
+    mock_client.start.assert_awaited_once_with(phone="+15555555555")
+    mock_client.connect.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_start_retry_and_cleanup(monkeypatch: MonkeyPatch, mock_client, service):
+    """If connect raises ConnectionResetError, the service should retry and finally remove the session file."""
+    monkeypatch.setattr("os.path.exists", lambda path: False)
+
+    # First call raises ConnectionResetError, second call succeeds
+    async def side_effect():
+        if not hasattr(side_effect, "called"):
+            side_effect.called = True
+            raise ConnectionResetError("reset")
+        return None
+
+    mock_client.connect.side_effect = side_effect
+
+    result = await service.start()
+    assert result is mock_client
+    assert mock_client.connect.await_count == 2
+    mock_client.start.assert_not_called()
+    # Session file should not be removed because we succeeded
+    assert not os.remove.called
+
+
+@pytest.mark.asyncio
+async def test_start_fails_after_retries(monkeypatch: MonkeyPatch, mock_client, service):
+    """If all retries fail, the session file should be removed."""
+    monkeypatch.setattr("os.path.exists", lambda path: False)
+
+    # All attempts raise ConnectionResetError
+    mock_client.connect.side_effect = ConnectionResetError("reset")
+
+    result = await service.start()
+    assert result is None
+    assert mock_client.connect.await_count == service._max_retries
+    # Session file removal should be attempted
+    assert os.remove.called
+    assert os.remove.call_args[0][0] == "test_session.session"
+
+
+@pytest.mark.asyncio
+async def test_join_group_success(monkeypatch: MonkeyPatch, mock_client, service):
+    """join_group should return the group entity on success."""
+    # Mock the safe call to return a result with a chat
+    mock_group = mock.Mock()
+    mock_group.title = "Test Group"
+    mock_result = mock.Mock()
+    mock_result.chats = [mock_group]
+
+    async def safe_call(coro, *args, **kwargs):
+        return mock_result
+
+    monkeypatch.setattr(service, "_safe_call", safe_call)
+
+    group = await service.join_group("https://t.me/+abcdef")
+    assert group is mock_group
+    assert group.title == "Test Group"
+    # No error handling path should be hit
+    assert not mock_client.get_entity.called
+
+
+@pytest.mark.asyncio
+async def test_join_group_already_participant(monkeypatch: MonkeyPatch, mock_client, service):
+    """If the user is already a participant, join_group should call get_entity."""
+    async def safe_call(coro, *args, **kwargs):
+        raise UserAlreadyParticipantError("already")
+
+    monkeypatch.setattr(service, "_safe_call", safe_call)
+
+    mock_entity = mock.Mock()
+    mock_client.get_entity.return_value = mock_entity
+
+    group = await service.join_group("https://t.me/+abcdef")
+    assert group is mock_entity
+    mock_client.get_entity.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_get_participants(monkeypatch: MonkeyPatch, mock_client, service):
+    """get_participants should return a list of participant dicts."""
+    # Create mock users
+    user1 = mock.Mock()
+    user1.first_name = "Alice"
+    user1.last_name = "Smith"
+    user1.username = "alice_s"
+    user1.id = 1
+    user1.phone = "+1111111111"
+
+    user2 = mock.Mock()
+    user2.first_name = "Bob"
+    user2.last_name = None
+    user2.username = None
+    user2.id = 2
+    user2.phone = None
+
+    async def iter_participants(entity):
+        yield user1
+        yield user2
+
+    mock_client.iter_participants.side_effect = iter_participants
+
+    participants = await service.get_participants("some_entity")
+    assert len(participants) == 2
+    assert participants[0]["id"] == 1
+    assert participants[0]["full_name"] == "Alice Smith"
+    assert participants[0]["username"] == "@alice_s"
+    assert participants[0]["phone"] == "+1111111111"
+
+    assert participants[1]["id"] == 2
+    assert participants[1]["full_name"] == "Bob"
+    assert participants[1]["username"] is None
+    assert participants[1]["phone"] is None
+
+
+@pytest.mark.asyncio
+async def test_safe_call_retry(monkeypatch: MonkeyPatch, mock_client, service):
+    """_safe_call should retry on ConnectionResetError and eventually succeed."""
+    # Simulate a coroutine that fails twice then succeeds
+    async def failing_coro():
+        if not hasattr(failing_coro, "count"):
+            failing_coro.count = 0
+        failing_coro.count += 1
+        if failing_coro.count < 3:
+            raise ConnectionResetError("reset")
+        return "success"
+
+    result = await service._safe_call(failing_coro)
+    assert result == "success"
+    assert failing_coro.count == 3
+
+
+@pytest.mark.asyncio
+async def test_safe_call_exhausted(monkeypatch: MonkeyPatch, mock_client, service):
+    """If all retries fail, _safe_call should raise ConnectionResetError."""
+    async def always_fail():
+        raise ConnectionResetError("reset")
+
+    with pytest.raises(ConnectionResetError):
+        await service._safe_call(always_fail)
+
+
+# --------------------------------------------------------------------------- #
+# Logging checks (optional)
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.asyncio
+async def test_logging_on_start_failure(monkeypatch: MonkeyPatch, mock_client, service, caplog):
+    """Ensure that a failed start logs an error."""
+    monkeypatch.setattr("os.path.exists", lambda path: False)
+    mock_client.connect.side_effect = ConnectionResetError("reset")
+    caplog.set_level(logging.ERROR)
+    await service.start()
+    assert any("Failed to start Telethon client" in rec.message for rec in caplog.records)
