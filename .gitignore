@@ -1,1 +1,11 @@
+# Ignore all environment files
 .env
+.env.*
+
+# Ignore all Python compiled files
+*.pyc
+__pycache__/
+
+# (Optional but recommended for Python projects)
+*.pyo
+*.pyd
