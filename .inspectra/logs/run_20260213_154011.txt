@@ -1,0 +1,13 @@
+[ERR] E:\FYP\fyp\main.py:5: UserWarning: Step one completed with a minor issue
+[ERR]   warnings.warn("Step one completed with a minor issue", UserWarning)
+[ERR] E:\FYP\fyp\main.py:9: DeprecationWarning: Step two used a deprecated feature
+[ERR]   warnings.warn("Step two used a deprecated feature", DeprecationWarning)
+[ERR] E:\FYP\fyp\main.py:13: RuntimeWarning: Step three encountered a non-critical configuration issue
+[ERR]   warnings.warn("Step three encountered a non-critical configuration issue", RuntimeWarning)
+[ERR] Traceback (most recent call last):
+[ERR]   File "E:\FYP\fyp\main.py", line 26, in <module>
+[ERR]     main()
+[ERR]     ~~~~^^
+[ERR]   File "E:\FYP\fyp\main.py", line 22, in main
+[ERR]     raise RuntimeError("Critical failure: unable to continue execution")
+[ERR] RuntimeError: Critical failure: unable to continue execution

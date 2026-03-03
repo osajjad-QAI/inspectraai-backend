@@ -1,0 +1,19 @@
+[ERR] INFO:     Will watch for changes in these directories: ['E:\\Quanticept\\opentendrAll\\openTendr']
+[ERR] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[ERR] INFO:     Started reloader process [13704] using WatchFiles
+[ERR] C:\Users\Obaid Sajjad\miniconda3\envs\crypto\Lib\site-packages\pydantic\_internal\_config.py:334: UserWarning: Valid config keys have changed in V2:
+[ERR] * 'orm_mode' has been renamed to 'from_attributes'
+[ERR]   warnings.warn(message, UserWarning)
+[ERR] INFO:     Started server process [4368]
+[ERR] INFO:     Waiting for application startup.
+[ERR] \U0001f680 FastAPI application starting up
+[ERR] Starting database connection...
+[ERR] Database connection established successfully
+[ERR] Starting Redis Background Jobs
+[ERR] \u2705 Startup services completed
+[ERR] INFO:     Application startup complete.
+[ERR] Task exception was never retrieved
+[ERR] future: <Task finished name='Task-3' coro=<webhook_worker() done, defined at E:\Quanticept\opentendrAll\openTendr\app\redis\worker.py:17> exception=ConnectionError("Error Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379) connecting to localhost:6379.")>
+[ERR] Traceback (most recent call last):
+Webhook worker started...
+Retry scheduler started...
