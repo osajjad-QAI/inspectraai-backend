@@ -21,7 +21,6 @@ class TestType(str, Enum):
 class EnvSetupRequest(BaseModel):
     venvName: str
     venvType: VenvType
-    testType: TestType
     installDependencies: bool
 
 
@@ -29,7 +28,6 @@ class EnvSetupResponse(BaseModel):
     success: bool
     message: str
     venv_path: Optional[str] = None
-    test_type: TestType
 
 
 # ==================== Directory Structure Models ====================

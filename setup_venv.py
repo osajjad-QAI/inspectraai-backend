@@ -17,7 +17,9 @@ def create_virtual_env(env_type="venv", env_name="myenv", python_version=None):
         python_version: optional Python version for conda (like "3.11")
     """
     if env_type == "venv":
-        env_path = os.path.join(os.getcwd(), env_name)
+        # Use PROJECT_PATH from environment, fallback to current directory
+        project_path = os.getenv("PROJECT_PATH", os.getcwd())
+        env_path = os.path.join(project_path, env_name)
         if not os.path.exists(env_path):
             print(f"[INFO] Creating venv environment at {env_path} ...")
             cmd = [sys.executable, "-m", "venv", env_path]
@@ -49,6 +51,7 @@ def create_virtual_env(env_type="venv", env_name="myenv", python_version=None):
 # -------------------------------
 # Install dependencies
 # -------------------------------
+
 def install_dependencies(env_type, env_name, requirements_file="requirements.txt"):
     """
     Install dependencies from requirements.txt
@@ -58,8 +61,18 @@ def install_dependencies(env_type, env_name, requirements_file="requirements.txt
         env_name: venv path or conda environment name
         requirements_file: path to requirements.txt
     """
-    if not os.path.exists(requirements_file):
-        print(f"[WARNING] {requirements_file} not found, skipping installation.")
+    # Get PROJECT_PATH from environment, fallback to current directory
+    project_path = os.getenv("PROJECT_PATH", os.getcwd())
+    
+    # If requirements_file is just a filename, look for it in PROJECT_PATH
+    if not os.path.isabs(requirements_file):
+        full_requirements_path = os.path.join(project_path, requirements_file)
+    else:
+        full_requirements_path = requirements_file
+    
+    # Check if requirements file exists
+    if not os.path.exists(full_requirements_path):
+        print(f"[WARNING] {full_requirements_path} not found, skipping installation.")
         return
 
     if env_type == "venv":
@@ -67,12 +80,12 @@ def install_dependencies(env_type, env_name, requirements_file="requirements.txt
         pip_path = os.path.join(env_name, "Scripts", "pip.exe") if os.name == "nt" else os.path.join(env_name, "bin", "pip")
         if not os.path.exists(pip_path):
             raise FileNotFoundError(f"pip not found in venv: {pip_path}")
-        print(f"[INFO] Installing dependencies in venv '{env_name}' ...")
-        subprocess.check_call([pip_path, "install", "-r", requirements_file])
+        print(f"[INFO] Installing dependencies in venv '{env_name}' from {full_requirements_path} ...")
+        subprocess.check_call([pip_path, "install", "-r", full_requirements_path])
 
     elif env_type == "conda":
-        print(f"[INFO] Installing dependencies in conda env '{env_name}' ...")
-        subprocess.check_call(["conda", "run", "-n", env_name, "pip", "install", "-r", requirements_file])
+        print(f"[INFO] Installing dependencies in conda env '{env_name}' from {full_requirements_path} ...")
+        subprocess.check_call(["conda", "run", "-n", env_name, "pip", "install", "-r", full_requirements_path])
     else:
         raise ValueError("env_type must be 'venv' or 'conda'")
 
@@ -91,6 +104,7 @@ def setup_environment(env_type="venv", env_name="myenv", python_version=None, in
         install_deps: "Yes" or "No" to install requirements.txt
     """
     env_ref = create_virtual_env(env_type=env_type, env_name=env_name, python_version=python_version)
+    print(f"[SUCCESS] : Environment '{env_ref}' of type '{env_type}'    created successfully.")
 
     if install_deps.lower() == "yes":
         install_dependencies(env_type, env_ref)
