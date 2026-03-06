@@ -226,7 +226,7 @@ async def process_upload_background(task_id: str, path: str, source_type: str):
             "message": "Starting vectorstore build...",
             "progress": 10,
             "path": path,
-            "type": source_type
+            "source": source_type
         }
         
         # Step 1: Build and save vectorstore
@@ -256,7 +256,7 @@ async def process_upload_background(task_id: str, path: str, source_type: str):
             "message": "Project source processed and vectorstore loaded successfully",
             "progress": 100,
             "path": path,
-            "type": source_type
+            "source": source_type
         }
         
         # Print the received data
@@ -265,7 +265,7 @@ async def process_upload_background(task_id: str, path: str, source_type: str):
         print("=" * 50)
         print(f"Task ID: {task_id}")
         print(f"Path: {path}")
-        print(f"Type: {source_type.split('.')[0] if '.' in source_type else source_type}")
+        print(f"Source: {source_type.split('.')[0] if '.' in source_type else source_type}")
         print("Vectorstore built and loaded successfully")
         print("=" * 50)
         
@@ -275,6 +275,6 @@ async def process_upload_background(task_id: str, path: str, source_type: str):
             "message": f"Error processing project: {str(e)}",
             "progress": 0,
             "path": path,
-            "type": source_type
+            "source": source_type
         }
         print(f"Error processing upload {task_id}: {str(e)}")

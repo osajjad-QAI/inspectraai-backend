@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import os
 import threading
 import uuid
@@ -8,9 +8,11 @@ from schemas import (
     DynamicTestingRequest,
     DynamicTestingStatusResponse,
     TestingResponse,
+    UploadStatusResponse,
 )
 from dynamic_testing.progress import get_progress, set_progress
 from config import get_project_path
+from utils import upload_status
 
 router = APIRouter(prefix="/testing", tags=["Testing Endpoints"])
 
@@ -117,3 +119,44 @@ async def sql_optimization():
             success=False,
             message=f"Error during SQL optimization: {str(e)}",
         )
+
+
+@router.get("/upload_status/{task_id}", response_model=UploadStatusResponse)
+async def get_upload_status(task_id: str):
+    """
+    Get the status of an upload task.
+    Frontend polls this endpoint to check upload progress.
+    """
+    if task_id not in upload_status:
+        raise HTTPException(status_code=404, detail="Task ID not found")
+
+    status_data = upload_status[task_id]
+
+    return UploadStatusResponse(
+        status=status_data["status"],
+        message=status_data["message"],
+        progress=status_data.get("progress"),
+        path=status_data.get("path"),
+        source=status_data.get("source"),
+    )
+
+
+@router.get("/upload_status", response_model=UploadStatusResponse)
+async def get_latest_upload_status():
+    """
+    Get the status of the most recent upload task.
+    Convenience endpoint if you only track one upload at a time.
+    """
+    if not upload_status:
+        raise HTTPException(status_code=404, detail="No upload tasks found")
+
+    task_id = list(upload_status.keys())[-1]
+    status_data = upload_status[task_id]
+
+    return UploadStatusResponse(
+        status=status_data["status"],
+        message=status_data["message"],
+        progress=status_data.get("progress"),
+        path=status_data.get("path"),
+        source=status_data.get("source"),
+    )
