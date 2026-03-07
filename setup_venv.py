@@ -7,7 +7,7 @@ import shutil
 # Environment Management
 # -------------------------------
 
-def create_virtual_env(env_type="venv", env_name="myenv", python_version=None):
+def create_virtual_env(env_type="venv", env_name="myenv", python_version=None, project_path=None):
     """
     Create a Python environment.
     
@@ -17,9 +17,9 @@ def create_virtual_env(env_type="venv", env_name="myenv", python_version=None):
         python_version: optional Python version for conda (like "3.11")
     """
     if env_type == "venv":
-        # Use PROJECT_PATH from environment, fallback to current directory
-        project_path = os.getenv("PROJECT_PATH", os.getcwd())
-        env_path = os.path.join(project_path, env_name)
+        # Prefer explicit project path from API request, fallback to runtime PROJECT_PATH/cwd.
+        resolved_project_path = project_path or os.getenv("PROJECT_PATH", os.getcwd())
+        env_path = os.path.join(resolved_project_path, env_name)
         if not os.path.exists(env_path):
             print(f"[INFO] Creating venv environment at {env_path} ...")
             cmd = [sys.executable, "-m", "venv", env_path]
@@ -52,7 +52,7 @@ def create_virtual_env(env_type="venv", env_name="myenv", python_version=None):
 # Install dependencies
 # -------------------------------
 
-def install_dependencies(env_type, env_name, requirements_file="requirements.txt"):
+def install_dependencies(env_type, env_name, requirements_file="requirements.txt", project_path=None):
     """
     Install dependencies from requirements.txt
     
@@ -61,12 +61,12 @@ def install_dependencies(env_type, env_name, requirements_file="requirements.txt
         env_name: venv path or conda environment name
         requirements_file: path to requirements.txt
     """
-    # Get PROJECT_PATH from environment, fallback to current directory
-    project_path = os.getenv("PROJECT_PATH", os.getcwd())
+    # Prefer explicit project path from API request, fallback to runtime PROJECT_PATH/cwd.
+    resolved_project_path = project_path or os.getenv("PROJECT_PATH", os.getcwd())
     
     # If requirements_file is just a filename, look for it in PROJECT_PATH
     if not os.path.isabs(requirements_file):
-        full_requirements_path = os.path.join(project_path, requirements_file)
+        full_requirements_path = os.path.join(resolved_project_path, requirements_file)
     else:
         full_requirements_path = requirements_file
     
@@ -93,7 +93,7 @@ def install_dependencies(env_type, env_name, requirements_file="requirements.txt
 # -------------------------------
 # Main function to orchestrate
 # -------------------------------
-def setup_environment(env_type="venv", env_name="myenv", python_version=None, install_deps="Yes"):
+def setup_environment(env_type="venv", env_name="myenv", python_version=None, install_deps="Yes", project_path=None):
     """
     High-level function to create environment and optionally install dependencies
     
@@ -103,11 +103,16 @@ def setup_environment(env_type="venv", env_name="myenv", python_version=None, in
         python_version: Python version (only for conda)
         install_deps: "Yes" or "No" to install requirements.txt
     """
-    env_ref = create_virtual_env(env_type=env_type, env_name=env_name, python_version=python_version)
+    env_ref = create_virtual_env(
+        env_type=env_type,
+        env_name=env_name,
+        python_version=python_version,
+        project_path=project_path,
+    )
     print(f"[SUCCESS] : Environment '{env_ref}' of type '{env_type}'    created successfully.")
 
     if install_deps.lower() == "yes":
-        install_dependencies(env_type, env_ref)
+        install_dependencies(env_type, env_ref, project_path=project_path)
         print("[SUCCESS] : Dependencies installed Successfully")
     else:
         print("[INFO] Skipping dependency installation.")

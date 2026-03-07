@@ -22,6 +22,7 @@ class EnvSetupRequest(BaseModel):
     venvName: str
     venvType: VenvType
     installDependencies: bool
+    path: Optional[str] = None
 
 
 class EnvSetupResponse(BaseModel):

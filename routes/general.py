@@ -190,13 +190,13 @@ async def setup_environment(request: EnvSetupRequest):
     """Set up the virtual environment and prepare for analysis."""
     try:
         venv_path = None
+        project_path = request.path.strip() if request.path else get_project_path()
 
         if request.venvType == VenvType.none:
             return EnvSetupResponse(
                 success=True,
-                message=f"No virtual environment setup requested for {request.testType} testing",
+                message="No virtual environment setup requested",
                 venv_path=None,
-                test_type=request.testType,
             )
 
         if request.venvType == VenvType.poetry:
@@ -204,22 +204,28 @@ async def setup_environment(request: EnvSetupRequest):
                 success=False,
                 message="Poetry environment setup is not yet supported",
                 venv_path=None,
-                test_type=request.testType,
             )
 
         env_type = request.venvType.value
         env_name = request.venvName
         install_deps = "Yes" if request.installDependencies else "No"
 
+        if env_type == VenvType.venv.value and not os.path.isdir(project_path):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid project path for venv setup: {project_path}",
+            )
+
         setup_venv_environment(
             env_type=env_type,
             env_name=env_name,
             python_version=None,
             install_deps=install_deps,
+            project_path=project_path,
         )
 
         if env_type == "venv":
-            venv_path = os.path.join(get_project_path(), env_name)
+            venv_path = os.path.join(project_path, env_name)
         else:
             venv_path = env_name
 
@@ -231,7 +237,6 @@ async def setup_environment(request: EnvSetupRequest):
             success=True,
             message=setup_message,
             venv_path=venv_path,
-            test_type=request.testType,
         )
 
     except Exception as e:
