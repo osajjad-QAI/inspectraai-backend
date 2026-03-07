@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import os
 import threading
 import uuid
@@ -8,9 +8,11 @@ from schemas import (
     DynamicTestingRequest,
     DynamicTestingStatusResponse,
     TestingResponse,
+    UploadStatusResponse,
 )
 from dynamic_testing.progress import get_progress, set_progress
 from config import get_project_path
+from utils import upload_status
 
 router = APIRouter(prefix="/testing", tags=["Testing Endpoints"])
 

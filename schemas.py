@@ -22,6 +22,7 @@ class EnvSetupRequest(BaseModel):
     venvName: str
     venvType: VenvType
     installDependencies: bool
+    path: Optional[str] = None
 
 
 class EnvSetupResponse(BaseModel):
@@ -37,6 +38,10 @@ class DirectoryNode(BaseModel):
     type: str  # "file" or "folder"
     path: str
     children: Optional[List["DirectoryNode"]] = None
+
+
+class ProjectSourceTreeRequest(BaseModel):
+    path: Optional[str] = None
 
 
 # ==================== Project Source Models ====================
@@ -55,13 +60,17 @@ class UploadStatus(str, Enum):
 
 class SubmitProjectSourceRequest(BaseModel):
     path: str
-    type: ProjectSourceType
+    source: str
+
+    class Config:
+        extra = "forbid"
 
 
 class SubmitProjectSourceResponse(BaseModel):
     success: bool
     message: str
     task_id: str
+    cloned_path: Optional[str] = None
 
 
 class UploadStatusResponse(BaseModel):
@@ -69,15 +78,41 @@ class UploadStatusResponse(BaseModel):
     message: str
     progress: Optional[int] = None
     path: Optional[str] = None
-    type: Optional[str] = None
+    source: Optional[str] = None
+
+
+class PreprocessProjectRequest(BaseModel):
+    path: str
+
+    class Config:
+        extra = "forbid"
+
+
+class PreprocessProjectResponse(BaseModel):
+    success: bool
+    message: str
+    task_id: str
+
+
+class PreprocessStatus(str, Enum):
+    pending = "pending"
+    processing = "processing"
+    completed = "completed"
+    failed = "failed"
+
+
+class PreprocessStatusResponse(BaseModel):
+    status: PreprocessStatus
+    message: str
+    progress: Optional[int] = None
+    path: Optional[str] = None
 
 
 # ==================== LLM Test Models ====================
 
 class LLMTestRequest(BaseModel):
     provider: str
-    model_name: str
-    api_key: str
+    model_name: Optional[str] = None
     prompt: str
 
 
@@ -96,6 +131,28 @@ class FileData(BaseModel):
     content: str
     size: int
     type: str
+
+
+# ==================== API Key Configuration Models ====================
+
+class APIProviderType(str, Enum):
+    groq = "groq"
+    gemini = "gemini"
+    openai = "openai"
+    kimi = "kimi"
+    anthropic = "anthropic"
+
+
+class APIKeySetupRequest(BaseModel):
+    api_key: str
+    type: APIProviderType
+
+
+class APIKeySetupResponse(BaseModel):
+    success: bool
+    message: str
+    env_variable: Optional[str] = None
+    error: Optional[str] = None
 
 
 class GetFileContentRequest(BaseModel):
