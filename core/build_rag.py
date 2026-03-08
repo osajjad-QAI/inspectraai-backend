@@ -1,8 +1,8 @@
 import os
 import ast
 from typing import List
-from langchain.vectorstores import FAISS
-from langchain.docstore.document import Document
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 import fnmatch
 

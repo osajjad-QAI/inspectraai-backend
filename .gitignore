@@ -1,17 +1,49 @@
-# Environment files
-.env
-.env.*
-
 # Python compiled files
 *.pyc
 *.pyo
 *.pyd
 *.cpython-*
 
-# Python cache
-__pycache__/
 
-# Virtual environments
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+
+# =========================
+# Python
+# =========================
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 venv/
 .venv/
 env/
+ENV/
+
+
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# =========================
+# Archives / binaries
+# =========================
+*.zip
+*.rar
+*.tar
+*.gz
