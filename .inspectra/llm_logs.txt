@@ -1982,3 +1982,304 @@ SOURCE: stderr / warning
 LOG:
 [ERR] C:\Users\Obaid Sajjad\miniconda3\envs\crypto\Lib\site-packages\pydantic\_internal\_config.py:334: UserWarning: Valid config keys have changed in V2:
 [ERR] * 'orm_mode' has been renamed to 'from_attributes'
+
+================================================================================
+TIME: 2026-03-08 10:07:10
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:5: UserWarning: Step one completed with a minor issue
+
+================================================================================
+TIME: 2026-03-08 10:07:10
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step one completed with a minor issue", UserWarning)
+
+================================================================================
+TIME: 2026-03-08 10:07:11
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:9: DeprecationWarning: Step two used a deprecated feature
+
+================================================================================
+TIME: 2026-03-08 10:07:11
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step two used a deprecated feature", DeprecationWarning)
+
+================================================================================
+TIME: 2026-03-08 10:07:12
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:13: RuntimeWarning: Step three encountered a non-critical configuration issue
+
+================================================================================
+TIME: 2026-03-08 10:07:12
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step three encountered a non-critical configuration issue", RuntimeWarning)
+
+================================================================================
+TIME: 2026-03-08 10:08:35
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:5: UserWarning: Step one completed with a minor issue
+
+================================================================================
+TIME: 2026-03-08 10:08:35
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step one completed with a minor issue", UserWarning)
+
+================================================================================
+TIME: 2026-03-08 10:08:36
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:9: DeprecationWarning: Step two used a deprecated feature
+
+================================================================================
+TIME: 2026-03-08 10:08:36
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step two used a deprecated feature", DeprecationWarning)
+
+================================================================================
+TIME: 2026-03-08 10:08:37
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:13: RuntimeWarning: Step three encountered a non-critical configuration issue
+
+================================================================================
+TIME: 2026-03-08 10:08:37
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step three encountered a non-critical configuration issue", RuntimeWarning)
+
+================================================================================
+TIME: 2026-03-08 10:08:44
+SOURCE: stderr / error
+LOG:
+[ERR] Traceback (most recent call last):
+[ERR]   File "E:\FYP\fyp\main.py", line 26, in <module>
+[ERR]     main()
+[ERR]     ~~~~^^
+[ERR]   File "E:\FYP\fyp\main.py", line 22, in main
+[ERR]     raise RuntimeError("Critical failure: unable to continue execution")
+[ERR] RuntimeError: Critical failure: unable to continue execution
+# ---- Python Block 1 ----
+raise RuntimeError("Critical failure: unable to continue execution")
+
+# ---- Python Block 2 ----
+from .distro import main
+
+if __name__ == "__main__":
+    main()
+
+# ---- Python Block 3 ----
+# file: run_steps.py
+import warnings
+import logging
+import sys
+
+# ----------------------------------------------------------------------
+# Configure a simple logger (you can make this more sophisticated)
+# ----------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    stream=sys.stdout,
+)
+
+# ----------------------------------------------------------------------
+# Step functions – they still use warnings for the demo
+# ----------------------------------------------------------------------
+def step_one():
+    warnings.warn("Step one completed with a minor issue", UserWarning)
+
+
+def step_two():
+    warnings.warn("Step two used a deprecated feature", DeprecationWarning)
+
+
+def step_three():
+    warnings.warn(
+        "Step three encountered a non‑critical configuration issue",
+        RuntimeWarning,
+    )
+
+
+# ----------------------------------------------------------------------
+# Main driver
+# ----------------------------------------------------------------------
+def main():
+    try:
+        logging.info("Starting the workflow...")
+        step_one()
+        step_two()
+        step_three()
+        logging.info("Workflow completed successfully.")
+        # If you really need to abort under a specific condition, raise here:
+        # if some_condition:
+        #     raise RuntimeError("Critical failure: unable to continue execution")
+    except Exception as exc:
+        # Catch *any* exception, log it, and exit cleanly
+        logging.error("Critical failure: %s", exc, exc_info=True)
+        sys.exit(1)
+
+
+# ----------------------------------------------------------------------
+# Entry‑point guard
+# ----------------------------------------------------------------------
+if __name__ == "__main__":
+    main()
+
+
+================================================================================
+TIME: 2026-03-08 10:11:02
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:5: UserWarning: Step one completed with a minor issue
+
+================================================================================
+TIME: 2026-03-08 10:11:03
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step one completed with a minor issue", UserWarning)
+
+================================================================================
+TIME: 2026-03-08 10:11:03
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:9: DeprecationWarning: Step two used a deprecated feature
+
+================================================================================
+TIME: 2026-03-08 10:11:04
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step two used a deprecated feature", DeprecationWarning)
+
+================================================================================
+TIME: 2026-03-08 10:11:04
+SOURCE: stderr / warning
+LOG:
+[ERR] E:\FYP\fyp\main.py:13: RuntimeWarning: Step three encountered a non-critical configuration issue
+
+================================================================================
+TIME: 2026-03-08 10:11:04
+SOURCE: stderr / warning
+LOG:
+[ERR]   warnings.warn("Step three encountered a non-critical configuration issue", RuntimeWarning)
+
+================================================================================
+TIME: 2026-03-08 10:11:13
+SOURCE: stderr / error
+LOG:
+[ERR] Traceback (most recent call last):
+[ERR]   File "E:\FYP\fyp\main.py", line 26, in <module>
+[ERR]     main()
+[ERR]     ~~~~^^
+[ERR]   File "E:\FYP\fyp\main.py", line 22, in main
+[ERR]     raise RuntimeError("Critical failure: unable to continue execution")
+[ERR] RuntimeError: Critical failure: unable to continue execution
+# ---- Python Block 1 ----
+raise RuntimeError("Critical failure: unable to continue execution")
+
+# ---- Python Block 2 ----
+# main.py
+import warnings
+import logging
+import sys
+
+# ----------------------------------------------------------------------
+# Configure a simple logger (feel free to adapt the format/level)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s – %(message)s",
+    stream=sys.stderr,
+)
+
+# ----------------------------------------------------------------------
+def step_one():
+    warnings.warn(
+        "Step one completed with a minor issue", UserWarning
+    )
+
+
+def step_two():
+    warnings.warn(
+        "Step two used a deprecated feature", DeprecationWarning
+    )
+
+
+def step_three():
+    warnings.warn(
+        "Step three encountered a non‑critical configuration issue",
+        RuntimeWarning,
+    )
+
+
+def main():
+    try:
+        step_one()
+        step_two()
+        step_three()
+
+        # This used to be a hard fatal error.
+        # Now we only log it and keep the program alive.
+        raise RuntimeError("Critical failure: unable to continue execution")
+    except RuntimeError as exc:
+        # Log the problem – you could also decide to re‑raise or exit with a non‑zero code.
+        logging.error("Encountered a critical error: %s", exc)
+        # Optional: clean‑up, fallback logic, etc.
+        # For demo purposes we just continue.
+
+
+if __name__ == "__main__":
+    main()
+
+# ---- Python Block 3 ----
+except RuntimeError as exc:
+        logging.error("Encountered a critical error: %s", exc)
+        sys.exit(1)          # <-- uncomment to terminate after logging
+
+# ---- Python Block 4 ----
+# main.py
+import warnings
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s – %(message)s",
+    stream=sys.stderr,
+)
+
+def step_one():
+    warnings.warn("Step one completed with a minor issue", UserWarning)
+
+
+def step_two():
+    warnings.warn("Step two used a deprecated feature", DeprecationWarning)
+
+
+def step_three():
+    warnings.warn(
+        "Step three encountered a non‑critical configuration issue",
+        RuntimeWarning,
+    )
+
+
+def main():
+    step_one()
+    step_two()
+    step_three()
+
+    # Previously: raise RuntimeError(...)
+    logging.error("Critical failure: unable to continue execution")
+    # Optionally exit with a non‑zero code if you still want to signal failure:
+    # sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+

@@ -11,3 +11,5 @@ groq
 google-generativeai
 pydantic
 rich
+sentence-transformers
+faiss-cpu

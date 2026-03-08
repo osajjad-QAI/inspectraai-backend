@@ -1,0 +1,5 @@
+[ERR] INFO:groq_key_manager:GroqKeyManager initialised with 1 API key(s).
+[ERR] INFO:     Started server process [17384]
+[ERR] INFO:     Waiting for application startup.
+[ERR] INFO:     Application startup complete.
+[ERR] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
