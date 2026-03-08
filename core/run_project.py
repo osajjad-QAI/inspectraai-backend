@@ -5,7 +5,7 @@ import os
 import time
 import re
 from datetime import datetime
-from llm import send_to_llm   # 👈 NEW
+from core.llm import send_to_llm   # 👈 NEW
 from dynamic_testing.progress import set_progress
 
 WATCH_EXTENSIONS = (".py",)

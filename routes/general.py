@@ -9,8 +9,8 @@ from dotenv import set_key, load_dotenv
 
 from llm_client.groq_client import generate_groq_response
 from llm_client.gemini_client import generate_gemini_response
-from setup_venv import setup_environment as setup_venv_environment
-from schemas import (
+from utils.setup_venv import setup_environment as setup_venv_environment
+from core.schemas import (
     VenvType,
     EnvSetupRequest,
     EnvSetupResponse,
@@ -32,13 +32,13 @@ from schemas import (
     APIKeySetupResponse,
     APIProviderType,
 )
-from utils import (
+from utils.filesystem import (
     build_directory_structure,
     process_upload_background,
     upload_status,
 )
-from build_rag import build_and_save_vectorstore
-from config import get_project_path
+from core.build_rag import build_and_save_vectorstore
+from config.runtime import get_project_path
 
 router = APIRouter(prefix="/setup", tags=["Project Management Endpoints"])
 
@@ -618,7 +618,7 @@ async def get_file_content(path: str):
         file_name = os.path.basename(file_path)
         file_extension = os.path.splitext(file_name)[1].lstrip(".")
 
-        from schemas import FileData
+        from core.schemas import FileData
 
         file_data = FileData(
             name=file_name,

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from config import initialize_runtime_config
+from config.runtime import initialize_runtime_config
 
 initialize_runtime_config()
 

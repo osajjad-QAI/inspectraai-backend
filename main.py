@@ -1,7 +1,7 @@
-from setup_venv import setup_environment
-from build_rag import build_and_save_vectorstore, load_vectorstore
-from get_files import get_files
-from run_project import run_with_watch
+from utils.setup_venv import setup_environment
+from core.build_rag import build_and_save_vectorstore, load_vectorstore
+from core.get_files import get_files
+from core.run_project import run_with_watch
 import os
 import sys
 # from langgraph import main
