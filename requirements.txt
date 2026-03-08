@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-dotenv
+langchain
+langchain-huggingface
+langchain-community
+langchain-core
+langchain-groq
+langgraph
+groq
+google-generativeai
+pydantic
+rich
