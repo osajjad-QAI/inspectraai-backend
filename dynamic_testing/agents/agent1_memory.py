@@ -1,6 +1,6 @@
 # agents/agent1_memory.py
 from langchain_core.prompts import PromptTemplate
-from build_rag import load_vectorstore
+from core.build_rag import load_vectorstore
 from rich.console import Console
 from rich.markdown import Markdown
 from dynamic_testing.progress import set_progress

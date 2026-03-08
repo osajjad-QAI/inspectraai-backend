@@ -4,8 +4,8 @@ import asyncio
 from pathlib import Path
 from typing import Optional, List
 from fastapi import HTTPException
-from schemas import DirectoryNode, UploadStatus
-from build_rag import build_and_save_vectorstore, load_vectorstore
+from core.schemas import DirectoryNode, UploadStatus
+from core.build_rag import build_and_save_vectorstore, load_vectorstore
 
 
 # ==================== Global State ====================

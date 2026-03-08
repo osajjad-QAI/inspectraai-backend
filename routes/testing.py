@@ -3,16 +3,16 @@ import os
 import threading
 import uuid
 
-from run_project import run_with_watch
-from schemas import (
+from core.run_project import run_with_watch
+from core.schemas import (
     DynamicTestingRequest,
     DynamicTestingStatusResponse,
     TestingResponse,
     UploadStatusResponse,
 )
 from dynamic_testing.progress import get_progress, set_progress
-from config import get_project_path
-from utils import upload_status
+from config.runtime import get_project_path
+from utils.filesystem import upload_status
 
 router = APIRouter(prefix="/testing", tags=["Testing Endpoints"])
 
