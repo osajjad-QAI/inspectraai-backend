@@ -14,6 +14,9 @@ def stream_output(process, name):
         pass
 
 if __name__ == "__main__":
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
     # Start FastAPI server and Node server in parallel
     processes = []
     threads = []
@@ -35,6 +38,7 @@ if __name__ == "__main__":
             encoding='utf-8',
             bufsize=1,
             shell=True,
+            cwd=script_dir,
             env=env
         )
         processes.append(("FastAPI", fastapi_process))
@@ -85,5 +89,4 @@ if __name__ == "__main__":
                 proc.terminate()
             except:
                 pass
-        sys.exit(1)
         sys.exit(1)

@@ -207,7 +207,7 @@ def run_with_watch(
     if not workdir:
         raise ValueError("workdir is required")
 
-    log_dir = os.path.join(".inspectra", "logs")
+    log_dir = os.path.join(workdir, ".inspectra", "logs")
     os.makedirs(log_dir, exist_ok=True)
 
     wrapped_command = build_env_command(command, env_type, env_name)
