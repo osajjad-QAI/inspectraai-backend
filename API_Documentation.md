@@ -418,6 +418,49 @@ Returns latest dynamic testing progress.
 
 ---
 
+### `GET /testing/user-approval/status`
+Returns current approval state when pipeline asks user to continue or stop.
+
+#### Request Body
+- None
+
+#### Response Schema (`UserApprovalStatusResponse`)
+```json
+{
+  "status": "idle | pending | resolved",
+  "question": "string | null",
+  "decision": "yes | no | null",
+  "source": "terminal | ui | null",
+  "updated_at": "string | null",
+  "message": "string | null"
+}
+```
+
+---
+
+### `POST /testing/user-approval`
+Submits UI decision for pending approval prompt.
+
+#### Request Schema (`UserApprovalDecisionRequest`)
+```json
+{
+  "decision": "yes | no"
+}
+```
+
+#### Response Schema (`UserApprovalDecisionResponse`)
+```json
+{
+  "success": true,
+  "message": "Decision stored",
+  "status": "resolved",
+  "decision": "yes",
+  "source": "ui"
+}
+```
+
+---
+
 ### `POST /testing/sql-optimization`
 Runs SQL optimization placeholder logic.
 

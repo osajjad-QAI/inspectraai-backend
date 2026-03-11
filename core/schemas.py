@@ -200,6 +200,27 @@ class DynamicTestingStatusResponse(BaseModel):
     recent_errors: Optional[List[dict]] = None
     all_errors: Optional[List[dict]] = None
 
+
+class UserApprovalStatusResponse(BaseModel):
+    status: str
+    question: Optional[str] = None
+    decision: Optional[str] = None
+    source: Optional[str] = None
+    updated_at: Optional[str] = None
+    message: Optional[str] = None
+
+
+class UserApprovalDecisionRequest(BaseModel):
+    decision: str
+
+
+class UserApprovalDecisionResponse(BaseModel):
+    success: bool
+    message: str
+    status: str
+    decision: Optional[str] = None
+    source: Optional[str] = None
+
 class TestingResponse(BaseModel):
     success: bool
     message: str

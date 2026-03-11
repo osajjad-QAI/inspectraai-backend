@@ -9,8 +9,12 @@ from core.schemas import (
     DynamicTestingStatusResponse,
     TestingResponse,
     UploadStatusResponse,
+    UserApprovalStatusResponse,
+    UserApprovalDecisionRequest,
+    UserApprovalDecisionResponse,
 )
 from dynamic_testing.progress import get_progress, set_progress
+from dynamic_testing.user_approval import get_approval_state, submit_approval
 from config.runtime import get_project_path
 from utils.filesystem import upload_status
 
@@ -95,6 +99,27 @@ async def dynamic_testing(request: DynamicTestingRequest):
 async def dynamic_testing_status():
     """Return the latest dynamic testing progress state."""
     return DynamicTestingStatusResponse(**get_progress())
+
+
+@router.get("/user-approval/status", response_model=UserApprovalStatusResponse)
+async def user_approval_status():
+    """Return current approval state for UI polling."""
+    return UserApprovalStatusResponse(**get_approval_state())
+
+
+@router.post("/user-approval", response_model=UserApprovalDecisionResponse)
+async def user_approval_decision(request: UserApprovalDecisionRequest):
+    """Submit user yes/no decision from UI to continue or stop analysis."""
+    ok, message = submit_approval(request.decision, source="ui")
+    state = get_approval_state()
+
+    return UserApprovalDecisionResponse(
+        success=ok,
+        message=message,
+        status=state.get("status", "idle"),
+        decision=state.get("decision"),
+        source=state.get("source"),
+    )
 
 
 @router.post("/sql-optimization", response_model=TestingResponse)
