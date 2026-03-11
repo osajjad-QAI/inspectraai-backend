@@ -39,7 +39,8 @@ from utils.filesystem import (
     process_upload_background,
     upload_status,
 )
-from core.build_rag import build_and_save_vectorstore
+from core.build_rag import build_and_save_vectorstore, load_vectorstore
+from dynamic_testing.agents.agent1_memory import set_memory_db
 from config.runtime import get_project_path
 
 router = APIRouter(prefix="/setup", tags=["Project Management Endpoints"])
@@ -323,6 +324,11 @@ async def _process_preprocess_background(task_id: str, path: str):
         loop = asyncio.get_event_loop()
         with concurrent.futures.ThreadPoolExecutor() as executor:
             await loop.run_in_executor(executor, build_and_save_vectorstore, path)
+
+        # Warm shared agent memory cache so dynamic-testing can reuse it globally.
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            vector_store = await loop.run_in_executor(executor, load_vectorstore, path)
+        set_memory_db(vector_store)
 
         preprocess_status[task_id] = {
             "status": PreprocessStatus.completed,
