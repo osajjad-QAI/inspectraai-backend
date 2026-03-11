@@ -282,6 +282,37 @@ Stores provider API key in `.env`.
 
 ---
 
+### `GET /setup/api-key`
+Returns all API key entries discovered in `.env` with metadata.
+
+#### Request Body
+- None
+
+#### Response Schema (`APIKeyListResponse`)
+```json
+{
+  "success": true,
+  "message": "API keys metadata fetched successfully",
+  "count": 2,
+  "keys": [
+    {
+      "provider": "groq",
+      "env_variable": "GROQ_API_KEY",
+      "is_configured": true,
+      "value_length": 51,
+      "masked_value": "gsk_...UNGs"
+    }
+  ]
+}
+```
+
+#### Notes
+- Includes every `.env` variable ending with `_API_KEY`.
+- Returns masked values only (not full key text).
+- Empty values are returned as `is_configured: false`.
+
+---
+
 ### `GET /setup/getFileContent`
 Reads file content from query parameter path.
 
