@@ -1,4 +1,13 @@
 from langgraph.graph import StateGraph, END
+import threading
+
+from dynamic_testing.progress import set_progress
+from dynamic_testing.user_approval import (
+    start_approval,
+    submit_approval,
+    wait_for_approval,
+    get_approval_state,
+)
 
 
 class PipelineState(dict):
@@ -38,10 +47,33 @@ def agent2_isRelated(state: PipelineState):
         return ask_user()
     
 def ask_user():
-    user_decision = input("The error/log does not seem related to the code. Do you want to continue analysis? (yes/no): ")
-    if user_decision.lower() in ['yes', 'y']:
-        print("User chose YES to continue analysis. Proceeding to Agent 3.")
-        return "related"
-    else:
-        print("User chose NO to skip further analysis. Ending pipeline.")
-        return "skip"
+    prompt = "The error/log does not seem related to the code. Continue analysis? (yes/no): "
+    start_approval(prompt)
+    set_progress(
+        status="waiting",
+        current_agent="agent2",
+        message="Waiting for approval from terminal or UI",
+    )
+
+    def read_terminal_input() -> None:
+        try:
+            user_decision = input(prompt)
+            submit_approval(user_decision, source="terminal")
+        except Exception:
+            # Terminal input may be unavailable in some run modes.
+            return
+
+    threading.Thread(target=read_terminal_input, daemon=True).start()
+
+    print("Approval requested: respond in terminal or call /testing/user-approval API.")
+
+    while True:
+        resolved = wait_for_approval(timeout=1.0)
+        if resolved:
+            print("User chose YES to continue analysis. Proceeding to Agent 3.")
+            return "related"
+
+        state = get_approval_state()
+        if state.get("status") == "resolved":
+            print("User chose NO to skip further analysis. Ending pipeline.")
+            return "skip"
