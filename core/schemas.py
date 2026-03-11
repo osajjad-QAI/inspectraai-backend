@@ -155,6 +155,21 @@ class APIKeySetupResponse(BaseModel):
     error: Optional[str] = None
 
 
+class APIKeyMetadata(BaseModel):
+    provider: str
+    env_variable: str
+    is_configured: bool
+    value_length: int
+    masked_value: str
+
+
+class APIKeyListResponse(BaseModel):
+    success: bool
+    message: str
+    count: int
+    keys: List[APIKeyMetadata]
+
+
 class GetFileContentRequest(BaseModel):
     file_path: str
 

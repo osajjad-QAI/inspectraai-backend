@@ -6,7 +6,7 @@ from rich.markdown import Markdown
 from dynamic_testing.progress import set_progress
 
 console = Console()
-memory_db = load_vectorstore()
+# memory_db = load_vectorstore()
 docs = None
 
 def agent1( state):

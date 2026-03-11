@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import stat
 from urllib.parse import urlparse
-from dotenv import set_key, load_dotenv
+from dotenv import set_key, load_dotenv, dotenv_values
 
 from llm_client.groq_client import generate_groq_response
 from llm_client.gemini_client import generate_gemini_response
@@ -30,6 +30,8 @@ from core.schemas import (
     GetFileContentResponse,
     APIKeySetupRequest,
     APIKeySetupResponse,
+    APIKeyListResponse,
+    APIKeyMetadata,
     APIProviderType,
 )
 from utils.filesystem import (
@@ -569,6 +571,66 @@ async def setup_api_key(request: APIKeySetupRequest):
             success=False,
             message="An unexpected error occurred while setting up API key",
             error=str(e),
+        )
+
+
+@router.get("/api-key", response_model=APIKeyListResponse)
+async def get_api_keys():
+    """
+    Return all API keys discovered in .env as metadata entries.
+    Only metadata is returned; keys are masked for safety.
+    """
+    try:
+        env_file_path = os.path.join(os.getcwd(), ".env")
+        if not os.path.exists(env_file_path):
+            return APIKeyListResponse(
+                success=False,
+                message=".env file not found",
+                count=0,
+                keys=[],
+            )
+
+        env_data = dotenv_values(env_file_path)
+        key_entries: list[APIKeyMetadata] = []
+
+        for env_var, raw_value in env_data.items():
+            if not env_var or not env_var.upper().endswith("_API_KEY"):
+                continue
+
+            value = (raw_value or "").strip()
+            provider_name = env_var[:-8].lower() if len(env_var) > 8 else "unknown"
+
+            if not value:
+                masked_value = ""
+            elif len(value) <= 8:
+                masked_value = "*" * len(value)
+            else:
+                masked_value = f"{value[:4]}...{value[-4:]}"
+
+            key_entries.append(
+                APIKeyMetadata(
+                    provider=provider_name,
+                    env_variable=env_var,
+                    is_configured=bool(value),
+                    value_length=len(value),
+                    masked_value=masked_value,
+                )
+            )
+
+        key_entries.sort(key=lambda k: k.env_variable)
+
+        return APIKeyListResponse(
+            success=True,
+            message="API keys metadata fetched successfully",
+            count=len(key_entries),
+            keys=key_entries,
+        )
+    except Exception as e:
+        return APIKeyListResponse(
+            success=False,
+            message=f"Error reading API keys from .env: {str(e)}",
+            count=0,
+            keys=[],
         )
 
 
